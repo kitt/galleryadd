@@ -466,6 +466,8 @@ EOT
 	if (substr ($gallery_url, 0, 4) ne 'http') {
             if ($gallery_ssl > 0) {
 		$gallery_fullurl = 'https://';
+            } else {
+                $gallery_fullurl = 'http://';
             }
             $gallery_fullurl .= $gallery_url . $gallery_file;
 	} else {
