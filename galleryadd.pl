@@ -178,6 +178,7 @@ my $CfgFile = ($ENV{"GALLERYADD_CONFIG"} ?
 	$ENV{"GALLERYADD_CONFIG"} : "$ENV{'HOME'}/.galleryaddrc");
 local $gallery_version = 1;
 local $gallery_url = "http://gallery.yoursite.com";
+local $gallery_ssl = 0;
 local $gallery_username = "admin";
 local $gallery_password = "";
 local $gallery_album = "";
@@ -345,7 +346,7 @@ sub ParseCmdLine
 
 	$ProgName = $1 if ($ProgName =~ /.*\/([^\/]*)/);
 
-	&Getopts ('a:c:C:d:g:G:hlnp:qt:Tu:vz');
+	&Getopts ('a:c:C:d:g:G:hlnp:qst:Tu:vz');
 
 	if ($opt_h || $ShowUsage) { 
 		print <<EOT
@@ -361,6 +362,7 @@ Usage: $ProgName [options] [file(s) | dir(s)]
        -C text   caption for image(s)
        -d text   description for new album
        -g url    URL of gallery (default: $gallery_url)
+       -s        Use https: instead of http:
        -G [1|2]  gallery version being accessed (default: v$gallery_version.x)
        -l        list available albums for specified gallery 
        -n        do not verify if album exists before starting upload
@@ -392,6 +394,7 @@ EOT
 	$gallery_caption = $opt_C if (defined ($opt_C));
 	$gallery_newdescr = $opt_d if (defined ($opt_d));
 	$gallery_url = $opt_g if (defined ($opt_g));
+	$gallery_ssl = 1 if (defined ($opt_s));
 	$gallery_version = $opt_G if (defined ($opt_G));
 	$gallery_listalbums = 1 if (defined ($opt_l));
 	$gallery_noverify = 1 if (defined ($opt_n));
@@ -460,8 +463,11 @@ EOT
 	}
 
 	# check the url
-	if (substr ($gallery_url, 0, 7) ne 'http://') {
-		$gallery_fullurl = 'http://' . $gallery_url . $gallery_file;
+	if (substr ($gallery_url, 0, 4) ne 'http') {
+            if ($gallery_ssl > 0) {
+		$gallery_fullurl = 'https://';
+            }
+            $gallery_fullurl .= $gallery_url . $gallery_file;
 	} else {
 		$gallery_fullurl = $gallery_url . $gallery_file;
 	}
@@ -494,6 +500,7 @@ sub ParseCfgFile
 
 #			print "DBG:  CFG  gallery_version=[$gallery_version]\n";
 #			print "DBG:  CFG  gallery_url=[$gallery_url]\n";
+#			print "DBG:  CFG  gallery_ssl=[$gallery_ssl]\n";
 #			print "DBG:  CFG  gallery_username=[$gallery_username]\n";
 #			print "DBG:  CFG  gallery_password=[$gallery_password]\n";
 #			print "DBG:  CFG  gallery_album=[$gallery_album]\n";
@@ -536,6 +543,12 @@ gallery_version=$gallery_version
 # Values:  TEXT  Default:  $gallery_url
 #
 gallery_url=$gallery_url
+
+# Option:  -s use https: instead of http:
+# ENVvar:  \$GALLERY_SSL
+# Values:  TEXT  Default:  $gallery_ssl
+#
+gallery_ssl=0
 
 # Option:  -u user  username to use to login to gallery
 # ENVvar:  \$GALLERY_USERNAME
@@ -620,6 +633,8 @@ sub ParseEnvVars
 	$gallery_version = &GetEnvVar (GALLERY_VERSION, $gallery_version);
 
 	$gallery_url = &GetEnvVar (GALLERY_URL, $gallery_url);
+
+	$gallery_ssl = &GetEnvVar (GALLERY_SSL, $gallery_ssl);
 
 	$gallery_username = &GetEnvVar (GALLERY_USERNAME, $gallery_username);
 
