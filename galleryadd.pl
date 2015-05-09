@@ -14,7 +14,7 @@
 #        -d text   description for new album
 #        -g url    URL of gallery (default: $gallery_url)
 #        -G [1|2]  gallery version being accessed (default: v$gallery_version.x)
-#        -l        list available albums for specified gallery 
+#        -l        list available albums for specified gallery
 #        -n        do not verify if album exists before starting upload
 #        -p pass   password to use to login to gallery
 #        -q        quiet mode (unless errors are encountered)
@@ -31,16 +31,16 @@
 # Copyright (c) 2005-2007  galleryadd.pl 2.20  Iain Lea      iain@bricbrac.de
 # Copyright (c) 2002       galleryadd.pl 0.7a  Jesse Mullan  jmullan@visi.com
 #
-#   This program is free software; you can redistribute it and/or 
+#   This program is free software; you can redistribute it and/or
 #   modify it under the terms of the GNU General Public License as
 #   published by the Free Software Foundation; either version 2 of
 #   the License, or (at your option) any later version.
-# 
-#   This program is distributed in the hope that it will be useful, 
+#
+#   This program is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #   See the GNU General Public License for more details.
-# 
+#
 #   You should have received a copy of the GNU GPL along with this
 #   program; if not, write to the Free Software Foundation, Inc.,
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -113,14 +113,14 @@
 #   1.10
 #   - added filesize to upload stats   (Upload file.jpg [132.1K] [OK])
 #   - added xfer speed to upload stats (Upload file.jpg [280kb/s] [OK])
-#   - added $ENV{GALLERY_LOG} for verbose logfile 
+#   - added $ENV{GALLERY_LOG} for verbose logfile
 #   - changed fetch-albums code to be in &FetchAlbumList function
 #   - changed cookie_jar saving from autosave => 1 to $cookie_jar_save
 #   - fixed stripping of path from filename for ParseCmdLine function
 #   - fixed -v option to expand "~/galleryadd.log" to $HOME/filename
 #   - fixed '-c newalbum' to exit if album already exists in gallery
 #   - fixed -l option which was printing no files error message
-#   - fixed logic so that ! [-a|-c] prints error message and usage 
+#   - fixed logic so that ! [-a|-c] prints error message and usage
 #   - fixed logic so that -c newalbum can be done without adding images
 #   - fixed @ARGV to be sorted before calling AddDir/AddImage (cygwin)
 #   1.00
@@ -145,7 +145,7 @@
 #     with error if more than 1 match found. Regex support needed.
 #   - add gif/png etc. integrity support to -T option?
 #   - -C to create whole set of new albums (add whole dir tree!)
-#   - -c create sub-album under top-level album HOW ? 
+#   - -c create sub-album under top-level album HOW ?
 #   - add more stats ie. "Upload F.jpg [001/120] ... [OK]
 #   - what all the work for @gallery_filename and @ARGV usage?
 #   - highlight pic possible via GR protocol ???
@@ -153,7 +153,7 @@
 #   - fix/debug 'zip' to @FormatList for bulk upload ???
 #
 #use strict;
-require 'getopts.pl';
+use Getopt::Long;
 require LWP::UserAgent;
 use HTTP::Request::Common;
 use HTTP::Cookies;
@@ -174,7 +174,7 @@ my @FormatList = (
 
 # variables  Note: 'local' is used in pref to 'my' due to &ParseCfgFile magic!
 #
-my $CfgFile = ($ENV{"GALLERYADD_CONFIG"} ? 
+my $CfgFile = ($ENV{"GALLERYADD_CONFIG"} ?
 	$ENV{"GALLERYADD_CONFIG"} : "$ENV{'HOME'}/.galleryaddrc");
 local $gallery_version = 1;
 local $gallery_url = "http://gallery.yoursite.com";
@@ -246,11 +246,11 @@ $HTTP::Request::Common::DYNAMIC_FILE_UPLOAD = 1;
 if ($gallery_version == 1) {
 	$response = $ua->request (POST $gallery_fullurl,
 		Content_Type	=> 'form-data',
-		Content			=> [ 
+		Content			=> [
 			protocol_version	=> $gallery_protocol_version,
 			cmd					=> "login",
 			uname				=> $gallery_username,
-			password			=> $gallery_password 
+			password			=> $gallery_password
 		] );
 } else {
 	$response = $ua->request (POST $gallery_fullurl,
@@ -285,7 +285,7 @@ if ($gallery_resp_code != 200) {
 			last SWITCH;
 		}
 		&PrintErr ("", "", $gallery_resp_text, "incorrect username/password");
-	} 
+	}
 }
 
 if ($gallery_newalbum) {
@@ -297,7 +297,7 @@ if ($gallery_newalbum) {
 }
 
 for my $filename (sort (@ARGV)) {
-	next if ($filename eq '.' || $filename eq '..'); 
+	next if ($filename eq '.' || $filename eq '..');
 
 	if (-d "$filename") {
 		&PrintOut ("Check:  $filename  ");
@@ -346,9 +346,24 @@ sub ParseCmdLine
 
 	$ProgName = $1 if ($ProgName =~ /.*\/([^\/]*)/);
 
-	&Getopts ('a:c:C:d:g:G:hlnp:qst:Tu:vz');
+	GetOptions("a=s" => \$opt_a,
+		   'c=s' => \$opt_c,
+		   'C=s' => \$opt_C,
+		   'd=s' => \$opt_d,
+		   'g=s' => \$opt_g,
+		   'G=s' => \$opt_G,
+		   'h' => \$opt_h,
+		   'l' => \$opt_l,
+		   'n' => \$opt_n,
+		   'p=s' => \$opt_p,
+		   'q' => \$opt_q,
+		   't' => \$opt_t,
+		   'T=s' => \$opt_T,
+		   'u=s' => \$opt_u,
+		   'v' => \$opt_v,
+		   'z' => \$opt_z);
 
-	if ($opt_h || $ShowUsage) { 
+	if ($opt_h || $ShowUsage) {
 		print <<EOT
 $ScriptName $Version  URL: $ScriptUrl
 
@@ -364,7 +379,7 @@ Usage: $ProgName [options] [file(s) | dir(s)]
        -g url    URL of gallery (default: $gallery_url)
        -s        Use https: instead of http:
        -G [1|2]  gallery version being accessed (default: v$gallery_version.x)
-       -l        list available albums for specified gallery 
+       -l        list available albums for specified gallery
        -n        do not verify if album exists before starting upload
        -p pass   password to use to login to gallery
        -q        quiet mode (unless errors are encountered)
@@ -409,29 +424,29 @@ EOT
 	if ($gallery_version != 1 && $gallery_version != 2) {
 		print "Error: -G option required - specify version\n\n";
 		$gallery_version = 1;
-		&ParseCmdLine ($0, 1);	
+		&ParseCmdLine ($0, 1);
 	}
 
 	if (! $gallery_url) {
 		print "Error: -g option required - specify URL\n\n";
-		&ParseCmdLine ($0, 1);	
+		&ParseCmdLine ($0, 1);
 	}
 
 	if (! $gallery_username) {
 		print "Error: -u option required - specify username\n\n";
-		&ParseCmdLine ($0, 1);	
+		&ParseCmdLine ($0, 1);
 	}
 
 	if (! $gallery_password) {
 		print "Error: -p option required - specify password\n\n";
-		&ParseCmdLine ($0, 1);	
+		&ParseCmdLine ($0, 1);
 	}
 
 	if ($gallery_listalbums) {
 		$gallery_album = $gallery_newalbum = "";
 	} elsif (! $gallery_album && ! $gallery_newalbum) {
 		print "Error: -a or -c option required - specify album\n\n";
-		&ParseCmdLine ($0, 1);	
+		&ParseCmdLine ($0, 1);
 	}
 
 	if ($gallery_newalbum && ! $gallery_newtitle) {
@@ -451,7 +466,7 @@ EOT
 
 	if ((! $gallery_newalbum && ! $gallery_listalbums) && ! $gallery_file_count) {
 		print "Error: no files to upload - specify file(s)\n\n";
-		&ParseCmdLine ($0, 1);	
+		&ParseCmdLine ($0, 1);
 	}
 
 	if ($gallery_version == 1) {
@@ -488,7 +503,7 @@ sub ParseCfgFile
 				chomp;              #  killing these things:
 #				s[/\*.*\*/][];      #  /* comment */
 #				s[//.*][];          #  // comment
-				s/#.*//;            #  # comment 
+				s/#.*//;            #  # comment
 				s/^\s+//;           #  whitespace before stuff
 #				s/\s+$//;           #  whitespace after stuff
 				next unless length; #  If our line is empty, We should ignore some stuff
@@ -677,7 +692,7 @@ sub GetEnvVar
 }
 
 
-sub AlbumExists 
+sub AlbumExists
 {
 	my ($name) = @_;
 
@@ -727,7 +742,7 @@ sub AddDirectory
 	opendir (DIR, $dir) || &PrintErr ("", "", "", "$dir - $!");
 	my @filename = readdir (DIR);
 	closedir DIR;
-    
+
 	$newAlbumTitle = &FormatTitle ($dirname[$#dirname]);
 
 	&PrintOut ("Create  $album/$newAlbumName  ($newAlbumTitle)  ");
@@ -737,7 +752,7 @@ sub AddDirectory
 	if ($gallery_version == 1) {
 		$response = $ua->request (POST $gallery_fullurl,
 			Content_Type	=> 'form-data',
-			Content			=> [ 
+			Content			=> [
 				protocol_version	=> $gallery_protocol_version,
 				cmd					=> "new-album",
 				set_albumName		=> $album,
@@ -748,7 +763,7 @@ sub AddDirectory
 	} else {
 		$response = $ua->request (POST $gallery_fullurl,
 			Content_Type	=> 'form-data',
-			Content			=> [ 
+			Content			=> [
 				'g2_controller'				=> 'remote:GalleryRemote',
 				'g2_form[protocol_version]'	=> $gallery_protocol_version,
 				'g2_form[cmd]'				=> "new-album",
@@ -761,9 +776,9 @@ sub AddDirectory
 	}
 
 	($gallery_resp_code, $gallery_resp_text) = &GetResponse ($response);
-    
+
 	if ($gallery_resp_code != 200) {
-		&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+		&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 			"could not create album");
 	} else {
 		SWITCH: {
@@ -778,17 +793,17 @@ sub AddDirectory
 				last SWITCH;
 			}
 			if ($gallery_resp_text =~ /A new album could not be created because the user does not have permission to do so/) {
-				&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+				&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 					"could not create album - user does not have permission");
 				last SWITCH;
 			}
-			&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+			&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 				"could not create album - unknown error");
-		} 
+		}
 	}
-    
+
     foreach my $filename (sort (@filename))  {
-		next if ($filename eq '.' || $filename eq '..'); 
+		next if ($filename eq '.' || $filename eq '..');
 
 		if ( -d "$dir/$filename") {
 			&PrintOut ("Check:  $dir/$filename  ");
@@ -824,7 +839,7 @@ sub AddDirectory
 }
 
 
-sub AddAlbum 
+sub AddAlbum
 {
 	my ($album, $title, $descr, $parent) = @_;
 	my $wantedAlbumName = $album;
@@ -857,7 +872,7 @@ sub AddAlbum
 		$newAlbumName = $cleanAlbumName . '_' . $i;
 		$i++;
 	}
-    
+
 	$newAlbumTitle = &FormatTitle ($title);
 
 	if ($gallery_version == 1) {
@@ -870,7 +885,7 @@ sub AddAlbum
 
 		$response = $ua->request (POST $gallery_fullurl,
 			Content_Type	=> 'form-data',
-			Content			=> [ 
+			Content			=> [
 				protocol_version	=> $gallery_protocol_version,
 				cmd					=> "new-album",
 				set_albumName		=> $parent,
@@ -884,7 +899,7 @@ sub AddAlbum
 
 		$response = $ua->request (POST $gallery_fullurl,
 			Content_Type	=> 'form-data',
-			Content			=> [ 
+			Content			=> [
 				'g2_controller'				=> 'remote:GalleryRemote',
 				'g2_form[protocol_version]'	=> $gallery_protocol_version,
 				'g2_form[cmd]'				=> "new-album",
@@ -897,9 +912,9 @@ sub AddAlbum
 	}
 
 	($gallery_resp_code, $gallery_resp_text) = &GetResponse ($response);
-    
+
 	if ($gallery_resp_code != 200) {
-		&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+		&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 			"could not create album");
 	} else {
 		SWITCH: {
@@ -914,13 +929,13 @@ sub AddAlbum
 				last SWITCH;
 			}
 			if ($gallery_resp_text =~ /A new album could not be created because the user does not have permission to do so/) {
-				&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+				&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 					"could not create album - user does not have permission");
 				last SWITCH;
 			}
-			&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+			&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 				"could not create album - unknown error");
-		} 
+		}
 	}
 }
 
@@ -1003,7 +1018,7 @@ sub AddImage
 
 	if (! $gallery_zapcaption) {
 
-		$Caption = ($gallery_caption ? 
+		$Caption = ($gallery_caption ?
 			$gallery_caption : &FormatCaption ($filename));
 
 		&PrintOut ("\($Caption\)  ");
@@ -1013,7 +1028,7 @@ sub AddImage
 		if ($gallery_version == 1) {
 			$response = $ua->request (POST $gallery_fullurl,
 				Content_Type	=> 'form-data',
-				Content			=> [ 
+				Content			=> [
 					protocol_version	=> $gallery_protocol_version,
 					cmd					=> "add-item",
 					set_albumName		=> $album,
@@ -1039,7 +1054,7 @@ sub AddImage
 		if ($gallery_version == 1) {
 			$response = $ua->request (POST $gallery_fullurl,
 				Content_Type	=> 'form-data',
-				Content			=> [ 
+				Content			=> [
 					protocol_version	=> $gallery_protocol_version,
 					cmd					=> "add-item",
 					set_albumName		=> $album,
@@ -1066,7 +1081,7 @@ sub AddImage
 	$end_time = [gettimeofday];
 
 	if ($gallery_resp_code != 200) {
-		&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+		&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 			"could not upload image");
 	} else {
 		SWITCH: {
@@ -1075,13 +1090,13 @@ sub AddImage
 				last SWITCH;
 			}
 			if ($gallery_resp_text =~ /User cannot add to album/) {
-				&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+				&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 					"could not upload image - user cannot add to album");
 				last SWITCH;
 			}
-			&PrintErr ("", $gallery_resp_code, $gallery_resp_text, 
+			&PrintErr ("", $gallery_resp_code, $gallery_resp_text,
 				"could not upload image - unknown error");
-		} 
+		}
 	}
 }
 
@@ -1104,11 +1119,11 @@ sub LogClose
 sub LogPrint
 {
 	my ($Code, $Text, $Mesg) = @_;
-	
+
 	if ($gallery_logopen) {
-		print LOG "$Mesg\n" if $Mesg; 
-		print LOG "$Code\n" if $Code; 
-		print LOG "$Text\n" if $Text; 
+		print LOG "$Mesg\n" if $Mesg;
+		print LOG "$Code\n" if $Code;
+		print LOG "$Text\n" if $Text;
 	}
 }
 
@@ -1123,7 +1138,7 @@ sub LogPrintCmd
 		print LOG "Content      => \n";
 		print LOG "  protocol_version => $gallery_protocol_version\n";
 		print LOG "  cmd              => '$Cmd'\n";
-		
+
 		if ($Cmd =~ /login/) {
 			print LOG "  uname            => $Val1\n";
 			print LOG "  password         => $Val2\n";
@@ -1234,7 +1249,7 @@ sub FetchAlbumList
 	if ($gallery_version == 1) {
 		$response = $ua->request(POST $gallery_fullurl,
 			Content_Type	=> 'form-data',
-			Content			=> [ 
+			Content			=> [
 				protocol_version	=> $gallery_protocol_version,
 				cmd					=> "fetch-albums"
 			] );
@@ -1402,7 +1417,7 @@ sub PrintAlbumTree
 
 			$Len = ($gallery_version == 1 ? 13 : 5);
 			$Info .= sprintf "%-${Len}s  (%s)",
-				$albums[$Num]->{'name'}, 
+				$albums[$Num]->{'name'},
 				$albums[$Num]->{'title'};
 
 			&PrintOut ("Album:  $Padding$Info\n");
@@ -1431,7 +1446,7 @@ sub PrintAlbumNode
 
 			$Len = ($gallery_version == 1 ? 13 : 5);
 			$Info .= sprintf "%-${Len}s  (%s)",
-				$albums[$Num]->{'name'}, 
+				$albums[$Num]->{'name'},
 				$albums[$Num]->{'title'};
 
 			&PrintOut ("Album:  $Padding$Info\n");
@@ -1451,17 +1466,17 @@ sub PrintOutUploadStats
 	my $Xfer, $Stats;
 
 	if ($Size > 1048576) {		# MB
-		$Size = sprintf "%1.1fM", $Size / 1048576; 
+		$Size = sprintf "%1.1fM", $Size / 1048576;
 	} elsif ($Size > 1024) {	# KB
-		$Size = sprintf "%3.0fK", $Size / 1024; 
+		$Size = sprintf "%3.0fK", $Size / 1024;
 	}
 
 	if ($BytesPerSec > 1048576) {	# MB/s
-		$Xfer = sprintf "%1.1fM/s", $BytesPerSec / 1048576; 
+		$Xfer = sprintf "%1.1fM/s", $BytesPerSec / 1048576;
 	} elsif ($BytesPerSec > 1024) {	# KB/s
-		$Xfer = sprintf "%3.0fK/s", $BytesPerSec / 1024; 
+		$Xfer = sprintf "%3.0fK/s", $BytesPerSec / 1024;
 	}
-	
+
 	$Stats = sprintf "[%4s] [%6s] [OK]\n", $Size, $Xfer;
 	&PrintOut ($Stats);
 }
