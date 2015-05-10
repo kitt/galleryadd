@@ -176,7 +176,7 @@ my @FormatList = (
 #
 my $CfgFile = ($ENV{"GALLERYADD_CONFIG"} ?
 	$ENV{"GALLERYADD_CONFIG"} : "$ENV{'HOME'}/.galleryaddrc");
-local $gallery_version = 1;
+local $gallery_version = 2;
 local $gallery_url = "http://gallery.yoursite.com";
 local $gallery_ssl = 0;
 local $gallery_username = "admin";
@@ -346,20 +346,20 @@ sub ParseCmdLine
 
 	$ProgName = $1 if ($ProgName =~ /.*\/([^\/]*)/);
 
-	GetOptions("a=s" => \$opt_a,
-		   'c=s' => \$opt_c,
-		   'C=s' => \$opt_C,
-		   'd=s' => \$opt_d,
-		   'g=s' => \$opt_g,
-		   'G=s' => \$opt_G,
+	GetOptions("a:s" => \$opt_a,
+		   'c:s' => \$opt_c,
+		   'C:s' => \$opt_C,
+		   'd:s' => \$opt_d,
+		   'g:s' => \$opt_g,
+		   'k:i' => \$opt_k,
 		   'h' => \$opt_h,
 		   'l' => \$opt_l,
 		   'n' => \$opt_n,
-		   'p=s' => \$opt_p,
+		   'p:s' => \$opt_p,
 		   'q' => \$opt_q,
 		   't' => \$opt_t,
-		   'T=s' => \$opt_T,
-		   'u=s' => \$opt_u,
+		   'T:s' => \$opt_T,
+		   'u:s' => \$opt_u,
 		   'v' => \$opt_v,
 		   'z' => \$opt_z);
 
@@ -410,7 +410,7 @@ EOT
 	$gallery_newdescr = $opt_d if (defined ($opt_d));
 	$gallery_url = $opt_g if (defined ($opt_g));
 	$gallery_ssl = 1 if (defined ($opt_s));
-	$gallery_version = $opt_G if (defined ($opt_G));
+	$gallery_version = $opt_k if (defined ($opt_k));
 	$gallery_listalbums = 1 if (defined ($opt_l));
 	$gallery_noverify = 1 if (defined ($opt_n));
 	$gallery_password = $opt_p if (defined ($opt_p));
